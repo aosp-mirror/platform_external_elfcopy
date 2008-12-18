@@ -1488,6 +1488,9 @@ static void update_relocations_section_offsets(Elf *newelf, Elf *elf __attribute
             FAILIF_LIBELF(gelf_getrel (d, relidx, &rel_mem) == NULL,
                           gelf_getrel);
 
+            if (GELF_R_TYPE(rel_mem.r_info) == R_ARM_NONE)
+                continue;
+
             range_t *old_range = find_range(old_section_ranges,
                                             rel_mem.r_offset);
 #if 1
@@ -1510,7 +1513,7 @@ static void update_relocations_section_offsets(Elf *newelf, Elf *elf __attribute
 
                 {
                     int i = 0;
-                    INFO("ABOUT TO FAIL: old section ranges:\n");
+                    INFO("ABOUT TO FAIL for symbol [%s]: old section ranges:\n", symname);
 
                     int num_ranges;
                     range_t *ranges = get_sorted_ranges(old_section_ranges, &num_ranges);
