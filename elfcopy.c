@@ -2431,18 +2431,18 @@ update_symbol_values(Elf *elf, GElf_Ehdr *ehdr,
                     shdr_info[scnidx].shdr.sh_addr -
                     shdr_info[scnidx].old_shdr.sh_addr;
 
-                if (delta || shdr_info[scnidx].idx != scnidx) {
+                if (vaddr_delta || shdr_info[scnidx].idx != scnidx) {
 
                     if (sym->st_value)
                         INFO("0x%llx -> 0x%llx (delta %lld)",
                              sym->st_value,
-                             sym->st_value + delta,
-                             delta);
+                             sym->st_value + vaddr_delta,
+                             vaddr_delta);
                     else {
                         INFO("(value is zero, not adjusting it)",
                              sym->st_value,
-                             sym->st_value + delta,
-                             delta);
+                             sym->st_value + vaddr_delta,
+                             vaddr_delta);
                         /* This might be a bit too paranoid, but symbols with values of
                            zero for which we are not adjusting the value must be in the
                            static-symbol section and refer to a section which is
@@ -2474,7 +2474,7 @@ update_symbol_values(Elf *elf, GElf_Ehdr *ehdr,
 
                     sym->st_shndx = shdr_info[scnidx].idx;
                     if (sym->st_value)
-                        sym->st_value += delta;
+                        sym->st_value += vaddr_delta;
                     FAILIF_LIBELF(gelf_update_symshndx(symdata,
                                                        NULL,
                                                        inner,
@@ -2579,10 +2579,10 @@ static int get_end_of_range(shdr_info_t *shdr_info,
          /* (shdr_info[end].shdr.sh_type == SHT_NOBITS) || */
 #ifdef ARM_SPECIFIC_HACKS
             /* SHF_ALLOC sections with with names starting with ".ARM." are
-               part of the ARM EABI extensions to ELF. 
+               part of the ARM EABI extensions to ELF.
             */
             !strncmp(shdr_info[end].name, ".ARM.", 5) ||
-#endif 
+#endif
             (shdr_info[end].shdr.sh_type == SHT_DYNAMIC)))
     {
         if (real_align[end] > *alignment) {
@@ -2718,8 +2718,8 @@ get_section_real_align (GElf_Ehdr *ehdr, GElf_Phdr *phdr_info,
         if (phdr_info[pi].p_type == PT_NULL)
             continue;
 
-        /* Look for the first non-deleted section of a segment in output.  
-           We assume asections are sorted by offsets. Also check to see if  
+        /* Look for the first non-deleted section of a segment in output.
+           We assume asections are sorted by offsets. Also check to see if
            a segment starts with a section.  We only want to propagate
            alignment if the segment starts with a section.  */
         propagate_p = false;
@@ -2736,7 +2736,7 @@ get_section_real_align (GElf_Ehdr *ehdr, GElf_Phdr *phdr_info,
 
         if (!propagate_p || first_section == 0)
             continue;
-      
+
         /* Adjust alignment of first section.  Note that a section can appear
            in multiple segments.  We only need the extra alignment if the
            section's alignment is smaller than that of the segment.  */
@@ -2882,10 +2882,10 @@ static GElf_Word
 mem_overlap_size (GElf_Shdr *s, GElf_Phdr *p)
 {
     GElf_Addr a1, a2;
-   
+
     if (s->sh_flags & SHF_ALLOC) {
         a1 = p->p_vaddr > s->sh_addr ? p->p_vaddr : s->sh_addr;
-        a2 = ((p->p_vaddr + p->p_memsz < s->sh_addr + s->sh_size) ? 
+        a2 = ((p->p_vaddr + p->p_memsz < s->sh_addr + s->sh_size) ?
               (p->p_vaddr + p->p_memsz) : (s->sh_addr + s->sh_size));
         if (a1 < a2) {
             return a2 - a1;
@@ -2901,10 +2901,10 @@ static GElf_Word
 file_overlap_size (GElf_Shdr *s, GElf_Phdr *p)
 {
     GElf_Off o1, o2;
-   
+
     if (s->sh_type != SHT_NOBITS) {
         o1 = p->p_offset > s->sh_offset ? p->p_offset : s->sh_offset;
-        o2 = ((p->p_offset + p->p_filesz < s->sh_offset + s->sh_size) ? 
+        o2 = ((p->p_offset + p->p_filesz < s->sh_offset + s->sh_size) ?
               (p->p_offset + p->p_filesz) : (s->sh_offset + s->sh_size));
         if (o1 < o2) {
             return o2 - o1;
@@ -2933,7 +2933,7 @@ verify_elf(GElf_Ehdr *ehdr, struct shdr_info_t *shdr_info, int shdr_info_len,
             if (shdr_info[si].shdr.sh_flags & SHF_ALLOC) {
                 FAILIF ((addralign - 1) & shdr_info[si].shdr.sh_addr,
                         "Load address %llx of section %s is not "
-                        "aligned to multiples of %u\n", 
+                        "aligned to multiples of %u\n",
                         (long long unsigned) shdr_info[si].shdr.sh_addr,
                         shdr_info[si].name,
                         addralign);
@@ -2942,13 +2942,13 @@ verify_elf(GElf_Ehdr *ehdr, struct shdr_info_t *shdr_info, int shdr_info_len,
             if (shdr_info[si].shdr.sh_type != SHT_NOBITS) {
                 FAILIF ((addralign - 1) & shdr_info[si].shdr.sh_offset,
                         "Offset %lx of section %s is not "
-                        "aligned to multiples of %u\n", 
+                        "aligned to multiples of %u\n",
                         shdr_info[si].shdr.sh_offset,
                         shdr_info[si].name,
                         addralign);
             }
         }
-          
+
         /* Verify that sections do not overlap. */
         for (sj = si + 1; sj < shdr_info_len; sj++) {
             if (shdr_info[sj].idx <= 0)
