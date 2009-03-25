@@ -2160,7 +2160,7 @@ static Elf64_Off section_to_header_mapping(Elf *elf,
                 INFO("\n\t\t");
             }
             else
-              INFO("(!) %-17s does not match\n\t\t", shdr_info[inner].name);
+              INFO("(!) %-17s does not belong\n\t\t", shdr_info[inner].name);
         }
         else
           INFO("(!) %-17s is not considered, it is being removed\n\t\t", shdr_info[inner].name);
@@ -2778,7 +2778,7 @@ update_section_offsets(Elf *elf,
 
     GElf_Off lastoffset = 0;
     lastoffset += ehdr_size;
-    lastoffset += (ehdr->e_phnum + 1) * ehdr->e_phentsize;
+    lastoffset += ehdr->e_phnum * ehdr->e_phentsize;
     INFO("Section offsets will start from %lld.\n", lastoffset);
 
     int start = 1, end = 1;
