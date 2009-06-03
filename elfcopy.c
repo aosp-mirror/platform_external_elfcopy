@@ -107,7 +107,7 @@ verify_elf(GElf_Ehdr *ehdr, struct shdr_info_t *shdr_info, int shdr_info_len,
 #endif
 
 void adjust_elf(Elf *elf, const char *elf_name,
-                Elf *newelf, const char *newelf_name,
+                Elf *newelf, const char *newelf_name __attribute__((unused)),
                 Ebl *ebl,
                 GElf_Ehdr *ehdr, /* store ELF header of original library */
                 bool *sym_filter, int num_symbols,
@@ -1044,7 +1044,7 @@ void adjust_elf(Elf *elf, const char *elf_name,
 
                     /*  Go over the section array and find which section's offset
                         field matches this program header's, and update the program
-                        header's offset to refelect the new value.
+                        header's offset to reflect the new value.
                     */
                     Elf64_Off file_end, mem_end;
                     Elf64_Off new_phdr_offset =
@@ -1052,6 +1052,13 @@ void adjust_elf(Elf *elf, const char *elf_name,
                                                   shdr_info, shdr_info_len,
                                                   &file_end,
                                                   &mem_end);
+
+                    if (new_phdr_offset == (Elf64_Off)-1) {
+                        INFO("PT_ header type: %d does not contain any sections.\n",
+                               phdr_info[pi].p_type);
+                        /* Move to the next program header. */
+                        continue;
+                    }
 
                     /* Alignments of 0 and 1 mean nothing.  Higher alignments are
                        interpreted as powers of 2. */
@@ -1411,7 +1418,7 @@ static void update_relocations_section_symbol_references(
         d->d_size = new_nrels * relsect_info->shdr.sh_entsize;
 }
 
-static void update_relocations_section_offsets(Elf *newelf, Elf *elf __attribute((unused)),
+static void update_relocations_section_offsets(Elf *newelf __attribute((unused)), Elf *elf,
                                                Ebl *ebl __attribute__((unused)),
                                                shdr_info_t *info,
                                                int info_len __attribute__((unused)),
@@ -1886,7 +1893,7 @@ static void print_dynamic_segment_strings(Elf *elf, Ebl *oldebl,
 #endif
 
 static void adjust_dynamic_segment_offsets(Elf *elf, Ebl *oldebl,
-                                           Elf *newelf,
+                                           Elf *newelf __attribute__((unused)),
                                            int dynidx, /* index of .dynamic section in shdr_info[] */
                                            shdr_info_t *shdr_info,
                                            int shdr_info_len)
@@ -2439,10 +2446,7 @@ update_symbol_values(Elf *elf, GElf_Ehdr *ehdr,
                              sym->st_value + vaddr_delta,
                              vaddr_delta);
                     else {
-                        INFO("(value is zero, not adjusting it)",
-                             sym->st_value,
-                             sym->st_value + vaddr_delta,
-                             vaddr_delta);
+                        INFO("(value is zero, not adjusting it)");
                         /* This might be a bit too paranoid, but symbols with values of
                            zero for which we are not adjusting the value must be in the
                            static-symbol section and refer to a section which is
