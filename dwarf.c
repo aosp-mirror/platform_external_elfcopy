@@ -2506,14 +2506,16 @@ display_debug_loc (struct dwarf_section *section, void *file)
                         seen_first_offset = 1;
                     else
                         {
-                            if (start < next)
-                                warn (_("There is a hole [0x%lx - 0x%lx] in .debug_loc section.\n"),
+                            if (start < next) {
+/*                                warn (_("There is a hole [0x%lx - 0x%lx] in .debug_loc section.\n"),
                                       (long)(start - section_begin), (long)(next - section_begin));
-                            else if (start > next) {
+*/
+                            } else if (start > next) {
                                 last_overlap = start;
-                                warn (_("There is an overlap of %ld bytes [0x%lx - 0x%lx] in .debug_loc section.\n"),
+/*                                warn (_("There is an overlap of %ld bytes [0x%lx - 0x%lx] in .debug_loc section.\n"),
                                       (long)(start - next),
                                       (long)(start - section_begin), (long)(next - section_begin));
+*/
                             }
                         }
                     start = next;
@@ -2864,7 +2866,7 @@ display_debug_ranges (struct dwarf_section *section,
                         seen_first_offset = 1;
                     else
                         {
-                            if (start < next)
+/*                            if (start < next)
                                 warn (_("There is a hole [0x%lx - 0x%lx] in %s section.\n"),
                                       (long)(start - section_begin),
                                       (long)(next - section_begin), section->name);
@@ -2872,6 +2874,7 @@ display_debug_ranges (struct dwarf_section *section,
                                 warn (_("There is an overlap [0x%lx - 0x%lx] in %s section.\n"),
                                       (long)(start - section_begin),
                                       (long)(next - section_begin), section->name);
+*/
                         }
                     start = next;
 
