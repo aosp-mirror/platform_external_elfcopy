@@ -1057,6 +1057,8 @@ void adjust_elf(Elf *elf, const char *elf_name,
                         INFO("PT_ header type: %d does not contain any sections.\n",
                                phdr_info[pi].p_type);
                         /* Move to the next program header. */
+                        FAILIF_LIBELF(gelf_update_phdr (newelf, pi, &phdr_info[pi]) == 0,
+                                      gelf_update_phdr);
                         continue;
                     }
 
